@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:secure_storage_practice/models/login_model.dart';
+import 'package:secure_storage_practice/models/service_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +15,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      routes: {
+        '/': (context) => LoginPage(),
+        '/service': (context) => ServicePage()
+      },
+    );
   }
 }
 
@@ -52,7 +60,8 @@ class _LoginPageState extends State<LoginPage> {
       final dio = Dio();
       final param = {"username": "${username}", "password": "${password}"};
 
-      Response response = await dio.post("", data: param);
+      Response response =
+          await dio.post("http://localhost:5000/api/login", data: param);
 
       if (response.statusCode == 200) {
         final value =
@@ -64,11 +73,38 @@ class _LoginPageState extends State<LoginPage> {
         print("error");
         return false;
       }
-    } catch (e) {}
+    } catch (e) {
+      return false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+        body: Column(
+      children: [
+        TextField(
+          controller: username,
+          decoration: InputDecoration(
+            labelText: "Username",
+          ),
+        ),
+        TextField(
+          controller: password,
+          decoration: InputDecoration(labelText: "password"),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            if (await loginAction(username.text, password.text)) {
+              print("로그인 성공");
+              Navigator.pushNamed(context, "/service");
+            } else {
+              print("로그인 실패");
+            }
+          },
+          child: Text("로그인"),
+        ),
+      ],
+    ));
   }
 }
